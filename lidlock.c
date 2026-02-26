@@ -207,8 +207,37 @@ static LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
         }
     }
 
-    if (displayCount() == 0) {
-        LOG("Locking");
+if (displayCount() == 0) {
+        LOG("Minimizing windows and Locking");
+
+        // 1. Set up an array for 4 keyboard events (Press Win, Press D, Release D, Release Win)
+        INPUT inputs[4] = {0};
+
+        // Press the Left Windows Key
+        inputs[0].type = INPUT_KEYBOARD;
+        inputs[0].ki.wVk = VK_LWIN;
+
+        // Press the 'D' Key
+        inputs[1].type = INPUT_KEYBOARD;
+        inputs[1].ki.wVk = 'D';
+
+        // Release the 'D' Key
+        inputs[2].type = INPUT_KEYBOARD;
+        inputs[2].ki.wVk = 'D';
+        inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+        // Release the Left Windows Key
+        inputs[3].type = INPUT_KEYBOARD;
+        inputs[3].ki.wVk = VK_LWIN;
+        inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+        // 2. Send the keystrokes to the operating system
+        SendInput(4, inputs, sizeof(INPUT));
+
+        // 3. Pause for 100 milliseconds to allow the minimize animation to start
+        Sleep(100);
+
+        // 4. Proceed with locking the workstation
         if (LockWorkStation() == 0)
             systemError("locking workstation");
         else
@@ -267,3 +296,4 @@ cleanup:
 
     return ret;
 }
+
